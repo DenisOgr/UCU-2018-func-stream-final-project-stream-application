@@ -1,22 +1,23 @@
-package app
+package ua.ucu.edu
 
 import java.util
 import java.util.{Properties, UUID}
 
 import com.ovoenergy.kafka.serialization.circe._
 import org.apache.kafka.common.serialization.StringDeserializer
+import ua.ucu.edu.models.{Signal, Weather}
 
 import scala.io.Source
 
 // Import the Circe generic support
 import io.circe.generic.auto._
+import io.circe.syntax._
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
 import scala.collection.JavaConverters._
-import io.circe.generic.auto._, io.circe.syntax._
 
 
-object TestConsumer extends App{
+object TestWeatherConsumer extends App{
 
   private val kafkaProperties: Properties = new Properties()
   kafkaProperties.put("bootstrap.servers", "0.0.0.0:9092")
@@ -31,7 +32,36 @@ object TestConsumer extends App{
     circeJsonDeserializer[Weather]
   )
 
-  kafkaConsumer.subscribe(util.Arrays.asList("w_string"))
+  kafkaConsumer.subscribe(util.Arrays.asList("weather"))
+  println("Start polling")
+
+  while(true){
+    val records = kafkaConsumer.poll(10)
+    records.asScala.foreach(record => {
+      println(record.key() + ":" + record.value() + ":" + record.offset())
+      println("Weather as JSON" + record.value().asJson)
+    })
+
+  }
+
+}
+
+object TestSolarConsumer extends App{
+
+  private val kafkaProperties: Properties = new Properties()
+  kafkaProperties.put("bootstrap.servers", "0.0.0.0:9092")
+  kafkaProperties.put("max.poll.records", "100")
+  kafkaProperties.put("group.id", UUID.randomUUID().toString())
+  kafkaProperties.put("auto.offset.reset", "earliest")
+  kafkaProperties.put("auto.commit.enable",  "true")
+
+  val kafkaConsumer = new KafkaConsumer(
+    kafkaProperties,
+    new StringDeserializer(),
+    circeJsonDeserializer[Signal]
+  )
+
+  kafkaConsumer.subscribe(util.Arrays.asList("solar"))
   println("Start polling")
 
   while(true){

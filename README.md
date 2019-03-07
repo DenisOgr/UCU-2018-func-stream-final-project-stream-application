@@ -24,12 +24,25 @@ curl -X PUT \
   http://0.0.0.0:9021/2.0/management/connect/connectors/weather-connector/config \
   -H 'Content-Type: application/json' \
   -d '{
-  "connector.class": "weatherKafkaConnect.WeatherConnector",
+  "connector.class": "ua.ucu.edu.WeatherConnector",
   "name": "weather-connector",
   "value.converter": "org.apache.kafka.connect.storage.StringConverter",
   "AppId": "<API KEY FROM https://home.openweathermap.org/api_keys>",
   "KafkaTopic": "weather",
   "DataFile": "https://gist.githubusercontent.com/DenisOgr/f8fa530777f5db138aca0af22d861fcf/raw/80abdb992327272fbee321ca068988c2c1d47b19/data_v3.csv"
+}'
+```
+Add solar connector:
+```
+curl -X PUT \
+  http://0.0.0.0:9021/2.0/management/connect/connectors/solar-connector/config \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "connector.class": "ua.ucu.edu.SolarPanelConnector",
+  "name": "solar-connector",
+  "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "KafkaTopic": "solar",
+  "PanelUIDs": "'8d5e230a-e05d-4823-b7a8-8a553330d259', '02b92cfd-6143-49b9-ab74-0eb57b4263b9'"
 }'
 ```
 
@@ -38,6 +51,12 @@ Remove/stop weather connector:
 curl -X DELETE \
   http://0.0.0.0:9021/2.0/management/connect/connectors/weather-connector
 ```
+Remove/stop weather connector:
+```
+curl -X DELETE \
+  http://0.0.0.0:9021/2.0/management/connect/connectors/solar-connector
+```
+
 
 ## Getting logs from Kafka Connect 
 This is very useful during development:
@@ -46,13 +65,25 @@ cd {root_path}
 docker-compose logs -f connect
 ```
  
-## Getting messages from weather topic
+## Getting messages from weather/solar topic
 This is very useful during development:
 
 ```
 cd {root_path}
-/usr/bin/kafka-console-consumer --bootstrap-server localhost:9092 \
+docker-compose exec broker /usr/bin/kafka-console-consumer --bootstrap-server localhost:9092 \
         --topic weather \
+        --from-beginning \
+        --formatter kafka.tools.DefaultMessageFormatter \
+        --property print.key=true \
+        --property print.value=true \
+        --property key.deserializer=org.apache.kafka.common.serialization.StringDeserializer \
+        --property value.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+```
+
+```
+cd {root_path}
+docker-compose exec broker /usr/bin/kafka-console-consumer --bootstrap-server localhost:9092 \
+        --topic solar \
         --from-beginning \
         --formatter kafka.tools.DefaultMessageFormatter \
         --property print.key=true \
