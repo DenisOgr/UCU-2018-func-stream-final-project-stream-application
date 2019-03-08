@@ -14,7 +14,7 @@ ENV SCALA_VERSION ${SCALA_VERSION:-2.12.8}
 ENV SBT_VERSION ${SBT_VERSION:-1.2.4}
 
 COPY . /app
-
+WORKDIR /app
 
 RUN \
   echo "$SCALA_VERSION $SBT_VERSION" && \
@@ -32,6 +32,7 @@ RUN \
   $(mv /usr/local/sbt-launcher-packaging-$SBT_VERSION /usr/local/sbt || true) \
   ln -s /usr/local/sbt/bin/* /usr/local/bin/
 
-WORKDIR /app
+
+RUN sbt compile
 
 ENTRYPOINT scala -classpath target/scala-2.12/UCU-2018-func-stream-final-project-stream-application-assembly-0.1.jar ua.ucu.edu.StreamsApp
