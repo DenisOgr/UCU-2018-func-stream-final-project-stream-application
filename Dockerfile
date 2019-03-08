@@ -1,20 +1,37 @@
 #
-# Copyright 2018 Confluent Inc.
+# Scala and sbt Dockerfile
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# https://github.com/spikerlabs/scala-sbt (based on https://github.com/hseeberger/scala-sbt)
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
-FROM confluentinc/cp-kafka-connect:5.1.2
+# Pull base image
+FROM  openjdk:8-jre-alpine
 
-ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
+ARG SCALA_VERSION
+ARG SBT_VERSION
 
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:latest
+ENV SCALA_VERSION ${SCALA_VERSION:-2.12.8}
+ENV SBT_VERSION ${SBT_VERSION:-1.2.4}
+
+COPY . /app
+
+
+RUN \
+  echo "$SCALA_VERSION $SBT_VERSION" && \
+  mkdir -p /usr/lib/jvm/java-1.8-openjdk/jre && \
+  touch /usr/lib/jvm/java-1.8-openjdk/jre/release && \
+  apk add --no-cache bash && \
+  apk add --no-cache curl && \
+  curl -fsL http://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C /usr/local && \
+  ln -s /usr/local/scala-$SCALA_VERSION/bin/* /usr/local/bin/ && \
+  scala -version && \
+  scalac -version
+
+RUN \
+  curl -fsL https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz | tar xfz - -C /usr/local && \
+  $(mv /usr/local/sbt-launcher-packaging-$SBT_VERSION /usr/local/sbt || true) \
+  ln -s /usr/local/sbt/bin/* /usr/local/bin/
+
+WORKDIR /app
+
+ENTRYPOINT scala -classpath target/scala-2.12/UCU-2018-func-stream-final-project-stream-application-assembly-0.1.jar ua.ucu.edu.StreamsApp
