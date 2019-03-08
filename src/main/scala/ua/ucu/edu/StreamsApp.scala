@@ -1,17 +1,17 @@
 package ua.ucu.edu
 
-import java.time.Duration
+import java.io.FileInputStream
 import java.util
-import java.util.concurrent.TimeUnit
 import java.util.{Properties, UUID}
+import collection.JavaConverters._
 
 import ua.ucu.edu.models.{Signal, SignalEnriched, Weather}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.{Serde, StringDeserializer}
 import org.apache.kafka.streams.scala.{Serdes, StreamsBuilder}
 import org.apache.kafka.streams.scala.kstream.{Consumed, Joined, KStream, Produced}
-
 import org.apache.kafka.streams.{KafkaStreams, StreamsConfig, Topology}
+import org.apache.kafka.clients.admin.{AdminClient, NewTopic}
 
 
 
@@ -48,7 +48,20 @@ object StreamsApp extends App {
   props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
   props.put("max.poll.records", "100")
 
+  val newTopicProps = new Properties()
+  newTopicProps.load(new FileInputStream("kafkatopics.properties"))
 
+  val localKafkaAdmin = AdminClient.create(props)
+
+  val createTopic = (name : String) => {
+    new NewTopic(name,
+      Integer.parseInt(newTopicProps.getProperty("partitions")),
+      Integer.parseInt(newTopicProps.getProperty("replication")).toShort)
+  }
+
+  val topics = List("weather", "solar", "sensor_weather_output").map(createTopic).asJava
+
+  val topicStatus = localKafkaAdmin.createTopics(topics).values()
 
   val app = new StreamsApp
   val streams = new KafkaStreams(app.joinStreams(), props)
