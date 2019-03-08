@@ -11,6 +11,10 @@ libraryDependencies +=  kafkaGroupId % kafkaClientArtifactId % kafkaClientRevisi
 val kafkaConnectArtifactId = "connect-api"
 libraryDependencies +=  kafkaGroupId % kafkaConnectArtifactId % kafkaClientRevision
 
+libraryDependencies += "org.apache.kafka" %% "kafka-streams-scala" % "2.1.0"
+
+excludeDependencies += ExclusionRule("javax.ws.rs", "javax.ws.rs-api")
+libraryDependencies += "javax.ws.rs" % "javax.ws.rs-api" % "2.1.1"
 resolvers += Resolver.bintrayRepo("ovotech", "maven")
 val kafkaSerializationV = "0.3.9"
 
@@ -19,6 +23,10 @@ libraryDependencies ++= Seq(
   "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV
 )
 
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+
+libraryDependencies += "org.apache.kafka" % "kafka-streams-test-utils" % "2.1.0" % Test
 val circeVersion = "0.9.3"
 
 libraryDependencies ++= Seq(
@@ -26,6 +34,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic",
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
+
 
 fork in run := true
 
