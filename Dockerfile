@@ -35,4 +35,4 @@ RUN \
 
 RUN sbt compile
 
-ENTRYPOINT scala -classpath target/scala-2.12/UCU-2018-func-stream-final-project-stream-application-assembly-0.1.jar ua.ucu.edu.StreamsApp
+#ENTRYPOINT scala -classpath target/scala-2.12/UCU-2018-func-stream-final-project-stream-application-assembly-0.1.jar ua.ucu.edu.StreamsApp
