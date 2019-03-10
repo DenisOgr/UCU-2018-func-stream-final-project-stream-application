@@ -7,11 +7,24 @@ services:
     depends_on:
       - connect
       - broker
-    container_name: app
     volumes:
       - .:/app
     environment:
       KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:9092'
+
+  connect-config:
+    build:
+      context: .
+      dockerfile: DockerfileConnectConfig
+    image: ucu.edu.ua/connect-config/denis_porplenko:0.1
+    depends_on:
+      - zookeeper
+      - broker
+    volumes:
+      - ./docker/provisions:/app
+    container_name: connect-config
+    environment:
+      CONTROL_CENTER_CONNECT_CLUSTER: 'http://connect:8083/'
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.0.1
@@ -58,6 +71,7 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+
   connect:
     image: confluentinc/kafka-connect-datagen:latest
     build:

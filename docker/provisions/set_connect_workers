@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+import urllib.request
+import codecs
+import csv
+from kafka_connect import KafkaConnect
+from urllib.parse import urlparse
+import os
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--topic', dest='topic')
+parser.add_argument('--num', dest='num')
+
+args = parser.parse_args()
+def chunker_list(seq, size):
+    return (seq[i::size] for i in range(size))
+
+print("Set topic: %s to number of partitions: %s"%(args.topic, args.num))
+print("Getting all panels...")
+url='https://gist.githubusercontent.com/DenisOgr/f8fa530777f5db138aca0af22d861fcf/raw/80abdb992327272fbee321ca068988c2c1d47b19/data_v3.csv'
+ftpstream = urllib.request.urlopen(url)
+csvfile = csv.reader(codecs.iterdecode(ftpstream, 'utf-8'), )
+next(csvfile, None)
+csvfile = list(csvfile)
+print("Finish")
+
+control_url=urlparse(os.environ['CONTROL_CENTER_CONNECT_CLUSTER'])
+print("Connecting to Kafka Connect on host: %s:%s ..."%(control_url.hostname,control_url.port))
+connect_client = KafkaConnect(host=control_url.hostname, port=control_url.port, scheme='http')
+print("Kafka Connect API version: ", connect_client.api.version)
+
+print("Getting all connections....")
+connections = list(map(lambda c: c.name, connect_client.connectors))
+print(connections)
+print("Drop connections....")
+for connect in connections:
+    print("Drop %s"%connect)
+    del connect_client.connectors[connect]
+
+print("Compute number of connections....")
+csvfile  = list(filter(None, list(chunker_list(csvfile, 100))))
+print("Will be %s connections"%len(csvfile))
+print("Set new connections.....")
+
+for i in range(len(csvfile)):
+    batch = csvfile[i]
+    name=getName(args.topic, i)
+    config=getConfig(args.topic)
+
+# config = {
+#     "connector.class": "ua.ucu.edu.WeatherConnector",
+#     "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+#     "AppId": "111",
+#     "KafkaTopic": "weather",
+#     "tasks.max": "10",
+#     "DataFile": "https://gist.githubusercontent.com/DenisOgr/f8fa530777f5db138aca0af22d861fcf/raw/80abdb992327272fbee321ca068988c2c1d47b19/data_v3.csv"
+# }
+#
+ connect.connectors['sample-connector2'] = config

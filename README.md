@@ -29,6 +29,7 @@ curl -X PUT \
   "value.converter": "org.apache.kafka.connect.storage.StringConverter",
   "AppId": "<API KEY FROM https://home.openweathermap.org/api_keys>",
   "KafkaTopic": "weather",
+  "tasks.max": "10",
   "DataFile": "https://gist.githubusercontent.com/DenisOgr/f8fa530777f5db138aca0af22d861fcf/raw/80abdb992327272fbee321ca068988c2c1d47b19/data_v3.csv"
 }'
 ```
@@ -42,19 +43,18 @@ curl -X PUT \
   "name": "solar-connector",
   "value.converter": "org.apache.kafka.connect.storage.StringConverter",
   "KafkaTopic": "solar",
+  "tasks.max": "10",
   "PanelUIDs": "'8d5e230a-e05d-4823-b7a8-8a553330d259', '02b92cfd-6143-49b9-ab74-0eb57b4263b9'"
 }'
 ```
 
 Remove/stop weather connector:
 ```
-curl -X DELETE \
-  http://0.0.0.0:9021/2.0/management/connect/connectors/weather-connector
+make remove_weather_connect
 ```
 Remove/stop weather connector:
 ```
-curl -X DELETE \
-  http://0.0.0.0:9021/2.0/management/connect/connectors/solar-connector
+make remove_solar_connect
 ```
 
 

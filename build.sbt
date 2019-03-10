@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+//libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.apache.kafka" % "kafka-streams-test-utils" % "2.1.0" % Test
 val circeVersion = "0.9.3"
